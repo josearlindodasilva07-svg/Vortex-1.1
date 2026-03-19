@@ -518,64 +518,30 @@ local function giveTPTool()
     tpTool.Name = "TPTool"
     tpTool.CanBeDropped = false
     tpTool.RequiresHandle = true
-    tpTool.TextureId = "rbxassetid://3926305904"
     
     local handle = Instance.new("Part")
     handle.Name = "Handle"
-    handle.Size = Vector3.new(1, 1, 1)
-    handle.BrickColor = BrickColor.new("Bright blue")
+    handle.Size = Vector3.new(1,1,1)
+    handle.Color = Color3.fromRGB(0, 170, 255)
     handle.Material = Enum.Material.Neon
     handle.Shape = Enum.PartType.Ball
     handle.Parent = tpTool
     
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "TPGui"
-    billboard.Size = UDim2.new(0, 100, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 2, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = handle
-    
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "📍 TP"
-    text.TextColor3 = Color3.fromRGB(100, 200, 255)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.Parent = billboard
-    
-    tpTool.Equipped:Connect(function()
-        handle.Color = Color3.fromRGB(100, 200, 255)
-    end)
-    
     tpTool.Activated:Connect(function()
-        local mouse = LocalPlayer:GetMouse()
-        local targetPos = mouse.Hit.Position
         local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0))
-            
-            local effect = Instance.new("Part")
-            effect.Size = Vector3.new(1, 1, 1)
-            effect.BrickColor = BrickColor.new("Bright blue")
-            effect.Material = Enum.Material.Neon
-            effect.CanCollide = false
-            effect.Anchored = true
-            effect.Position = targetPos + Vector3.new(0, 3, 0)
-            effect.Parent = Workspace
-            
-            for i = 1, 5 do
-                effect.Transparency = i / 5
-                wait(0.05)
-            end
-            effect:Destroy()
-            
-            print("📍 Teleportado!")
-        end
+        if not char then return end
+        
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        
+        local mouse = LocalPlayer:GetMouse()
+        local pos = mouse.Hit.Position
+        
+        -- Teleporte seguro (um pouco acima do chão)
+        hrp.CFrame = CFrame.new(pos + Vector3.new(0, 3, 0))
     end)
     
     tpTool.Parent = backpack
-    print("✅ TP Tool adicionada!")
 end
 
 local function giveSpeedTool()
@@ -590,63 +556,39 @@ local function giveSpeedTool()
     speedTool.Name = "SpeedTool"
     speedTool.CanBeDropped = false
     speedTool.RequiresHandle = true
-    speedTool.TextureId = "rbxassetid://3926305904"
     
     local handle = Instance.new("Part")
     handle.Name = "Handle"
-    handle.Size = Vector3.new(0.8, 1.5, 0.8)
-    handle.BrickColor = BrickColor.new("Bright yellow")
+    handle.Size = Vector3.new(1,1,1)
+    handle.Color = Color3.fromRGB(255, 255, 0)
     handle.Material = Enum.Material.Neon
     handle.Parent = speedTool
     
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "SpeedGui"
-    billboard.Size = UDim2.new(0, 100, 0, 50)
-    billboard.StudsOffset = Vector3.new(0, 2, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = handle
-    
-    local text = Instance.new("TextLabel")
-    text.Size = UDim2.new(1, 0, 1, 0)
-    text.BackgroundTransparency = 1
-    text.Text = "⚡ SPEED"
-    text.TextColor3 = Color3.fromRGB(255, 255, 0)
-    text.TextScaled = true
-    text.Font = Enum.Font.GothamBold
-    text.Parent = billboard
-    
-    local speedBoost = 1000
-    local normalWalkSpeed = 16
     local active = false
-    
-    speedTool.Equipped:Connect(function()
-        handle.Color = Color3.fromRGB(255, 255, 0)
-    end)
-    
+    local normalSpeed = nil -- guarda velocidade original
+
     speedTool.Activated:Connect(function()
         local char = LocalPlayer.Character
         if not char then return end
+        
         local humanoid = char:FindFirstChild("Humanoid")
         if not humanoid then return end
-        
+
+        -- salva a velocidade original só uma vez
+        if not normalSpeed then
+            normalSpeed = humanoid.WalkSpeed
+        end
+
         active = not active
+
         if active then
-            humanoid.WalkSpeed = speedBoost
-            handle.Color = Color3.fromRGB(0, 255, 0)
-            text.Text = "⚡ ON"
-            text.TextColor3 = Color3.fromRGB(0, 255, 0)
-            print("🚀 Speed ativado (1000)!")
+            humanoid.WalkSpeed = 60
         else
-            humanoid.WalkSpeed = normalWalkSpeed
-            handle.Color = Color3.fromRGB(255, 255, 0)
-            text.Text = "⚡ OFF"
-            text.TextColor3 = Color3.fromRGB(255, 255, 0)
-            print("🏃 Speed desativado (16)!")
+            humanoid.WalkSpeed = normalSpeed
         end
     end)
     
     speedTool.Parent = backpack
-    print("✅ Speed Tool adicionada!")
 end
 
 local function Fly()
@@ -684,6 +626,7 @@ local ESPTab = Window:MakeTab({ Title = "ESP", Icon = "rbxassetid://13364900349"
 local TeleportTab = Window:MakeTab({ Title = "Teleport", Icon = "rbxassetid://10723415903" })
 local ToolsTab = Window:MakeTab({ Title = "Tools", Icon = "rbxassetid://10734952036" })
 local WavesTab = Window:MakeTab({ Title = "Waves", Icon = "rbxassetid://10723415903" })
+local TrollTab = Window:MakeTab({ Title = "Players", Icon = "rbxassetid://131153193945220" })
 
 -- ========== TELEPORT TAB ==========
 TeleportTab:AddSection({ "Sistema de Teleporte" })
@@ -791,6 +734,37 @@ ESPTab:AddDropdown({
 -- ========== PLAYER TAB ==========
 PlayerTab:AddSection({ "Controles do Jogador" })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local WalkSpeedAmount = 16
+local SpeedEnabled = false
+local DefaultSpeed = 16
+
+-- Função pra aplicar velocidade
+local function applySpeed()
+    local char = LocalPlayer.Character
+    if char then
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            if not DefaultSpeed or DefaultSpeed == 16 then
+                DefaultSpeed = hum.WalkSpeed -- salva a velocidade original
+            end
+            
+            hum.WalkSpeed = SpeedEnabled and WalkSpeedAmount or DefaultSpeed
+        end
+    end
+end
+
+-- Quando spawnar
+LocalPlayer.CharacterAdded:Connect(function(char)
+    local hum = char:WaitForChild("Humanoid")
+    DefaultSpeed = hum.WalkSpeed -- pega a velocidade do jogo
+    task.wait(0.3)
+    applySpeed()
+end)
+
+-- Slider
 PlayerTab:AddSlider({
     Name = "WalkSpeed",
     Min = 16,
@@ -798,21 +772,19 @@ PlayerTab:AddSlider({
     Default = 16,
     Callback = function(v)
         WalkSpeedAmount = v
-        if SpeedEnabled and LocalPlayer.Character then
-            LocalPlayer.Character.Humanoid.WalkSpeed = v
+        if SpeedEnabled then
+            applySpeed()
         end
     end
 })
 
+-- Toggle
 PlayerTab:AddToggle({
     Name = "Enable Speed",
     Default = false,
     Callback = function(v)
         SpeedEnabled = v
-        local h = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
-        if h then
-            h.WalkSpeed = v and WalkSpeedAmount or 16
-        end
+        applySpeed()
     end
 })
 
@@ -938,6 +910,84 @@ WavesTab:AddButton({
             print("✅ "..c.." waves apagadas!") 
         else 
             print("❌ Pasta não encontrada") 
+        end
+    end
+})
+
+-- ===== PLAYER LIST + VIEW =====
+
+local selectedPlayerName = nil
+
+local function getPlayerList()
+    local list = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            table.insert(list, p.Name)
+        end
+    end
+    return list
+end
+
+local playerDropdown = TrollTab:AddDropdown({
+    Name = "Selecionar Player",
+    Options = getPlayerList(),
+    Default = "",
+    Callback = function(v)
+        selectedPlayerName = v
+    end
+})
+
+TrollTab:AddButton({
+    Name = "Atualizar Lista",
+    Callback = function()
+        playerDropdown:Set(getPlayerList())
+    end
+})
+
+-- TELEPORTAR
+TrollTab:AddButton({
+    Name = "Teleportar até Player",
+    Callback = function()
+        if not selectedPlayerName then return end
+        
+        local target = Players:FindFirstChild(selectedPlayerName)
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame =
+                target.Character.HumanoidRootPart.CFrame
+        end
+    end
+})
+
+-- SPECTAR (VIEW)
+local spectando = false
+local connection = nil
+
+TrollTab:AddToggle({
+    Name = "Spectar Player",
+    Default = false,
+    Callback = function(v)
+        spectando = v
+
+        if spectando then
+            connection = RunService.RenderStepped:Connect(function()
+                local target = Players:FindFirstChild(selectedPlayerName)
+                if target and target.Character then
+                    local hum = target.Character:FindFirstChild("Humanoid")
+                    if hum then
+                        Camera.CameraSubject = hum
+                    end
+                end
+            end)
+        else
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+
+            local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+            if hum then
+                Camera.CameraSubject = hum
+            end
         end
     end
 })
